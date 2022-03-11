@@ -6,7 +6,7 @@ const Commands = {
   init() {
     for (let command of Object.keys(commandDescriptions)) {
       const [description, options] = commandDescriptions[command];
-      this.availableCommands[command] = Object.assign((options || {}), {description});
+      this.availableCommands[command] = Object.assign((options || {}), { description });
     }
 
     Settings.postUpdateHooks["keyMappings"] = this.loadKeyMappings.bind(this);
@@ -26,40 +26,40 @@ const Commands = {
     for (let line of configLines.reverse()) {
       const tokens = line.split(/\s+/);
       switch (tokens[0].toLowerCase()) {
-      case "map":
-        if ((3 <= tokens.length) && !unmapAll) {
-          var _, optionList, registryEntry;
-          [_, key, command, ...optionList] = tokens;
-          if (!seen[key] && (registryEntry = this.availableCommands[command])) {
-            seen[key] = true;
-            const keySequence = this.parseKeySequence(key);
-            const options = this.parseCommandOptions(command, optionList);
-            this.keyToCommandRegistry[key] =
-              Object.assign({keySequence, command, options, optionList}, this.availableCommands[command]);
+        case "map":
+          if ((3 <= tokens.length) && !unmapAll) {
+            var _, optionList, registryEntry;
+            [_, key, command, ...optionList] = tokens;
+            if (!seen[key] && (registryEntry = this.availableCommands[command])) {
+              seen[key] = true;
+              const keySequence = this.parseKeySequence(key);
+              const options = this.parseCommandOptions(command, optionList);
+              this.keyToCommandRegistry[key] =
+                Object.assign({ keySequence, command, options, optionList }, this.availableCommands[command]);
+            }
           }
-        }
-        break;
-      case "unmap":
-        if (tokens.length == 2)
-          seen[tokens[1]] = true;
-        break;
-      case "unmapall":
-        unmapAll = true;
-        break;
-      case "mapkey":
-        if (tokens.length === 3) {
-          const fromChar = this.parseKeySequence(tokens[1]);
-          const toChar = this.parseKeySequence(tokens[2]);
-          if ((fromChar.length === toChar.length && toChar.length === 1)
+          break;
+        case "unmap":
+          if (tokens.length == 2)
+            seen[tokens[1]] = true;
+          break;
+        case "unmapall":
+          unmapAll = true;
+          break;
+        case "mapkey":
+          if (tokens.length === 3) {
+            const fromChar = this.parseKeySequence(tokens[1]);
+            const toChar = this.parseKeySequence(tokens[2]);
+            if ((fromChar.length === toChar.length && toChar.length === 1)
               && this.mapKeyRegistry[fromChar[0]] == null) {
-            this.mapKeyRegistry[fromChar[0]] = toChar[0];
+              this.mapKeyRegistry[fromChar[0]] = toChar[0];
+            }
           }
-        }
-        break;
+          break;
       }
     }
 
-    chrome.storage.local.set({mapKeyRegistry: this.mapKeyRegistry});
+    chrome.storage.local.set({ mapKeyRegistry: this.mapKeyRegistry });
     this.installKeyStateMapping();
     this.prepareHelpPageData();
 
@@ -82,15 +82,15 @@ const Commands = {
   // them you have to press "shift" as well.
   // We sort modifiers here to match the order used in keyboard_utils.js.
   // The return value is a sequence of keys: e.g. "<Space><c-A>b" -> ["<space>", "<c-A>", "b"].
-  parseKeySequence: (function() {
+  parseKeySequence: (function () {
     const modifier = "(?:[acms]-)";                            // E.g. "a-", "c-", "m-", "s-".
     const namedKey = "(?:[a-z][a-z0-9]+)";                     // E.g. "left" or "f12" (always two characters or more).
     const modifiedKey = `(?:${modifier}+(?:.|${namedKey}))`;   // E.g. "c-*" or "c-left".
     const specialKeyRegexp = new RegExp(`^<(${namedKey}|${modifiedKey})>(.*)`, "i");
-    return function(key) {
+    return function (key) {
       if (key.length === 0) {
         return [];
-      // Parse "<c-a>bcd" as "<c-a>" and "bcd".
+        // Parse "<c-a>bcd" as "<c-a>" and "bcd".
       } else if (0 === key.search(specialKeyRegexp)) {
         const array = RegExp.$1.split("-");
         const adjustedLength = Math.max(array.length, 1)
@@ -150,10 +150,10 @@ const Commands = {
         }
       }
     }
-    chrome.storage.local.set({normalModeKeyStateMapping: keyStateMapping});
+    chrome.storage.local.set({ normalModeKeyStateMapping: keyStateMapping });
     // Inform `KeyboardUtils.isEscape()` whether `<c-[>` should be interpreted as `Escape` (which it is by
     // default).
-    chrome.storage.local.set({useVimLikeEscape: !("<c-[>" in keyStateMapping)});
+    chrome.storage.local.set({ useVimLikeEscape: !("<c-[>" in keyStateMapping) });
   },
 
   // Build the "helpPageData" data structure which the help page needs and place it in Chrome storage.
@@ -176,7 +176,7 @@ const Commands = {
         });
       }
     }
-    chrome.storage.local.set({helpPageData: commandGroups});
+    chrome.storage.local.set({ helpPageData: commandGroups });
   },
 
   // An ordered listing of all available commands, grouped by type. This is the order they will
@@ -184,72 +184,72 @@ const Commands = {
   commandGroups: {
     pageNavigation:
       ["scrollDown",
-      "scrollUp",
-      "scrollToTop",
-      "scrollToBottom",
-      "scrollPageDown",
-      "scrollPageUp",
-      "scrollFullPageDown",
-      "scrollFullPageUp",
-      "scrollLeft",
-      "scrollRight",
-      "scrollToLeft",
-      "scrollToRight",
-      "reload",
-      "copyCurrentUrl",
-      "openCopiedUrlInCurrentTab",
-      "openCopiedUrlInNewTab",
-      "goUp",
-      "goToRoot",
-      "enterInsertMode",
-      "enterVisualMode",
-      "enterVisualLineMode",
-      "passNextKey",
-      "focusInput",
-      "LinkHints.activateMode",
-      "LinkHints.activateModeToOpenInNewTab",
-      "LinkHints.activateModeToOpenInNewForegroundTab",
-      "LinkHints.activateModeWithQueue",
-      "LinkHints.activateModeToDownloadLink",
-      "LinkHints.activateModeToOpenIncognito",
-      "LinkHints.activateModeToCopyLinkUrl",
-      "goPrevious",
-      "goNext",
-      "nextFrame",
-      "mainFrame",
-      "Marks.activateCreateMode",
-      "Marks.activateGotoMode"],
+        "scrollUp",
+        "scrollToTop",
+        "scrollToBottom",
+        "scrollPageDown",
+        "scrollPageUp",
+        "scrollFullPageDown",
+        "scrollFullPageUp",
+        "scrollLeft",
+        "scrollRight",
+        "scrollToLeft",
+        "scrollToRight",
+        "reload",
+        "copyCurrentUrl",
+        "openCopiedUrlInCurrentTab",
+        "openCopiedUrlInNewTab",
+        "goUp",
+        "goToRoot",
+        "enterInsertMode",
+        "enterVisualMode",
+        "enterVisualLineMode",
+        "passNextKey",
+        "focusInput",
+        "LinkHints.activateMode",
+        "LinkHints.activateModeToOpenInNewTab",
+        "LinkHints.activateModeToOpenInNewForegroundTab",
+        "LinkHints.activateModeWithQueue",
+        "LinkHints.activateModeToDownloadLink",
+        "LinkHints.activateModeToOpenIncognito",
+        "LinkHints.activateModeToCopyLinkUrl",
+        "goPrevious",
+        "goNext",
+        "nextFrame",
+        "mainFrame",
+        "Marks.activateCreateMode",
+        "Marks.activateGotoMode"],
     vomnibarCommands:
       ["Vomnibar.activate",
-      "Vomnibar.activateInNewTab",
-      "Vomnibar.activateBookmarks",
-      "Vomnibar.activateBookmarksInNewTab",
-      "Vomnibar.activateTabSelection",
-      "Vomnibar.activateEditUrl",
-      "Vomnibar.activateEditUrlInNewTab"],
+        "Vomnibar.activateInNewTab",
+        "Vomnibar.activateBookmarks",
+        "Vomnibar.activateBookmarksInNewTab",
+        "Vomnibar.activateTabSelection",
+        "Vomnibar.activateEditUrl",
+        "Vomnibar.activateEditUrlInNewTab"],
     findCommands: ["enterFindMode", "performFind", "performBackwardsFind"],
     historyNavigation:
       ["goBack", "goForward"],
     tabManipulation:
       ["createTab",
-      "previousTab",
-      "nextTab",
-      "visitPreviousTab",
-      "firstTab",
-      "lastTab",
-      "duplicateTab",
-      "togglePinTab",
-      "toggleMuteTab",
-      "removeTab",
-      "restoreTab",
-      "moveTabToNewWindow",
-      "closeTabsOnLeft","closeTabsOnRight",
-      "closeOtherTabs",
-      "moveTabLeft",
-      "moveTabRight"],
+        "previousTab",
+        "nextTab",
+        "visitPreviousTab",
+        "firstTab",
+        "lastTab",
+        "duplicateTab",
+        "togglePinTab",
+        "toggleMuteTab",
+        "removeTab",
+        "restoreTab",
+        "moveTabToNewWindow",
+        "closeTabsOnLeft", "closeTabsOnRight",
+        "closeOtherTabs",
+        "moveTabLeft",
+        "moveTabRight"],
     misc:
       ["showHelp",
-      "toggleViewSource"]
+        "toggleViewSource"]
   },
 
   // Rarely used commands are not shown by default in the help dialog or in the README. The goal is to present
@@ -283,25 +283,25 @@ const Commands = {
 
 const defaultKeyMappings = {
   // Navigating the current page
-  "j": "scrollDown",
-  "k": "scrollUp",
-  "h": "scrollLeft",
-  "l": "scrollRight",
-  "gg": "scrollToTop",
-  "G": "scrollToBottom",
-  "zH": "scrollToLeft",
-  "zL": "scrollToRight",
+  "s": "scrollDown",
+  "w": "scrollUp",
+  "a": "scrollLeft",
+  "d": "scrollRight",
+  "W": "scrollToTop",
+  "S": "scrollToBottom",
+  "": "scrollToLeft",
+  "": "scrollToRight",
   "<c-e>": "scrollDown",
   "<c-y>": "scrollUp",
-  "d": "scrollPageDown",
-  "u": "scrollPageUp",
-  "r": "reload",
+  "ss": "scrollPageDown",
+  "ww": "scrollPageUp",
+  "": "reload",
   "yy": "copyCurrentUrl",
   "p": "openCopiedUrlInCurrentTab",
   "P": "openCopiedUrlInNewTab",
   "gi": "focusInput",
-  "[[": "goPrevious",
-  "]]": "goNext",
+  "": "goPrevious",
+  "": "goNext",
   "gf": "nextFrame",
   "gF": "mainFrame",
   "gu": "goUp",
@@ -331,12 +331,12 @@ const defaultKeyMappings = {
   "gE": "Vomnibar.activateEditUrlInNewTab",
 
   // Navigating history
-  "H": "goBack",
-  "L": "goForward",
+  "q": "goBack",
+  "e": "goForward",
 
   // Manipulating tabs
-  "K": "nextTab",
-  "J": "previousTab",
+  "k": "nextTab",
+  "j": "previousTab",
   "gt": "nextTab",
   "gT": "previousTab",
   "^": "visitPreviousTab",
@@ -344,11 +344,11 @@ const defaultKeyMappings = {
   ">>": "moveTabRight",
   "g0": "firstTab",
   "g$": "lastTab",
-  "W": "moveTabToNewWindow",
+  "": "moveTabToNewWindow",
   "t": "createTab",
   "yt": "duplicateTab",
-  "x": "removeTab",
-  "X": "restoreTab",
+  "": "removeTab",
+  "": "restoreTab",
   "<a-p>": "togglePinTab",
   "<a-m>": "toggleMuteTab",
 
@@ -428,17 +428,19 @@ const commandDescriptions = {
 
   createTab: ["Create new tab", { background: true, repeatLimit: 20 }],
   duplicateTab: ["Duplicate current tab", { background: true, repeatLimit: 20 }],
-  removeTab: ["Close current tab", { background: true,
-                                     repeatLimit: (chrome.session ? chrome.session.MAX_SESSION_RESULTS : null) || 25 }],
+  removeTab: ["Close current tab", {
+    background: true,
+    repeatLimit: (chrome.session ? chrome.session.MAX_SESSION_RESULTS : null) || 25
+  }],
   restoreTab: ["Restore closed tab", { background: true, repeatLimit: 20 }],
 
   moveTabToNewWindow: ["Move tab to new window", { background: true }],
   togglePinTab: ["Pin or unpin current tab", { background: true }],
   toggleMuteTab: ["Mute or unmute current tab", { background: true, noRepeat: true }],
 
-  closeTabsOnLeft: ["Close tabs on the left", {background: true, noRepeat: true}],
-  closeTabsOnRight: ["Close tabs on the right", {background: true, noRepeat: true}],
-  closeOtherTabs: ["Close all other tabs", {background: true, noRepeat: true}],
+  closeTabsOnLeft: ["Close tabs on the left", { background: true, noRepeat: true }],
+  closeTabsOnRight: ["Close tabs on the right", { background: true, noRepeat: true }],
+  closeOtherTabs: ["Close all other tabs", { background: true, noRepeat: true }],
 
   moveTabLeft: ["Move tab to the left", { background: true }],
   moveTabRight: ["Move tab to the right", { background: true }],
